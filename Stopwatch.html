@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pro Stopwatch</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #1a1a1a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .container {
+        background: #fff;
+        padding: 30px;
+        width: 380px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    h1 { color: #333; margin-bottom: 10px; }
+
+    .time {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 48px;
+        font-weight: bold;
+        margin: 20px 0;
+        color: #0077cc;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+    button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: all 0.2s;
+        min-width: 80px;
+    }
+
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .start { background: #28a745; color: white; }
+    .stop { background: #ffc107; color: #333; }
+    .reset { background: #dc3545; color: white; }
+    .lap { background: #007bff; color: white; }
+
+    #lapList {
+        margin-top: 20px;
+        padding: 0;
+        list-style: none;
+        max-height: 200px;
+        overflow-y: auto;
+        border-top: 1px solid #eee;
+    }
+
+    #lapList li {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        color: #555;
+    }
+
+    #lapList li span:first-child { font-weight: bold; color: #0077cc; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⏱ Stopwatch</h1>
+    <div class="time" id="time">00:00:00.00</div>
+
+    <div class="controls">
+        <button id="startBtn" class="start" onclick="start()">Start</button>
+        <button id="stopBtn" class="stop" onclick="stop()" disabled>Stop</button>
+        <button class="lap" onclick="lap()">Lap</button>
+        <button class="reset" onclick="reset()">Reset</button>
+    </div>
+
+    <ul id="lapList"></ul>
+</div>
+
+<script>
+    let ms = 0, sec = 0, min = 0, hr = 0;
+    let interval = null;
+
+    const timeDisplay = document.getElementById("time");
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const lapList = document.getElementById("lapList");
+
+    function display() {
+        let h = hr < 10 ? "0" + hr : hr;
+        let m = min < 10 ? "0" + min : min;
+        let s = sec < 10 ? "0" + sec : sec;
+        let p = ms < 10 ? "0" + ms : ms; // padding for deciseconds/ms
+
+        timeDisplay.innerHTML = `${h}:${m}:${s}.${p}`;
+    }
+
+    function run() {
+        ms++;
+        if (ms >= 100) { ms = 0; sec++; }
+        if (sec >= 60) { sec = 0; min++; }
+        if (min >= 60) { min = 0; hr++; }
+        display();
+    }
+
+    function start() {
+        if (interval) return;
+        interval = setInterval(run, 10); // Update every 10ms
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+    }
+
+    function stop() {
+        clearInterval(interval);
+        interval = null;
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    }
+
+    function reset() {
+        stop();
+        ms = 0; sec = 0; min = 0; hr = 0;
+        display();
+        lapList.innerHTML = "";
+    }
+
+    function lap() {
+        if (!interval && ms === 0) return; // Don't lap if not started
+        const li = document.createElement("li");
+        const lapCount = lapList.children.length + 1;
+        li.innerHTML = `<span>Lap ${lapCount}</span> <span>${timeDisplay.innerHTML}</span>`;
+        lapList.prepend(li); // New laps at the top
+    }
+
+    display();
+</script>
+
+</body>
+</html>
